@@ -4,11 +4,12 @@ import com.example.studentmanagement.entity.Student;
 import com.example.studentmanagement.service.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/students")
@@ -23,10 +24,15 @@ public class StudentController {
         return new ResponseEntity<>(createdStudent, HttpStatus.CREATED);
     }
 
-    // GET /api/students - Get All Students
+    // GET /api/students - Get All Students with pagination, sorting, and search
     @GetMapping
-    public ResponseEntity<List<Student>> getAllStudents() {
-        List<Student> students = studentService.getAllStudents();
+    public ResponseEntity<Page<Student>> getAllStudents(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,asc") String sort,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String course) {
+        Page<Student> students = studentService.getAllStudents(page, size, sort, name, course);
         return new ResponseEntity<>(students, HttpStatus.OK);
     }
 
@@ -36,7 +42,6 @@ public class StudentController {
         return studentService.getStudentById(id)
                 .map(student -> new ResponseEntity<>(student, HttpStatus.OK))
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
     }
 
     // PUT /api/students/{id} - Update Student

@@ -3,6 +3,10 @@ package com.example.studentmanagement.service;
 import com.example.studentmanagement.entity.Student;
 import com.example.studentmanagement.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,9 +22,14 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
-    // Retrieve all students
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
+    // Retrieve all students with pagination, sorting, and search
+    public Page<Student> getAllStudents(int page, int size, String sort, String name, String course) {
+        Sort sortObj = Sort.by(sort.split(",")[0]);
+        if (sort.split(",").length > 1 && "desc".equalsIgnoreCase(sort.split(",")[1])) {
+            sortObj = sortObj.descending();
+        }
+        Pageable pageable = PageRequest.of(page, size, sortObj);
+        return studentRepository.findByNameOrCourse(name, course, pageable);
     }
 
     // Retrieve student by ID
